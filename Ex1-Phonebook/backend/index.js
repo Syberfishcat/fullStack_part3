@@ -1,5 +1,7 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
+
 const app = express()
 
 morgan.token('body', (req, res) => {
@@ -35,7 +37,7 @@ const idGeneration = () => {
     return String(id)
 }
 
-app.use(express.json())
+app.use(express.json(), cors())
 app.use(
     morgan(function (tokens, req, res) {
         return [
