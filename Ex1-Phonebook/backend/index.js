@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
+const Person = require('./models/person')
 
 const app = express()
 
@@ -30,11 +32,11 @@ let persons = [
     }
 ]
 
-const idGeneration = () => {
-    if(persons.length === 0) return "1"
-    const id = Math.max(...persons.map(person => Number(person.id))) + 1
-    return String(id)
-}
+// const idGeneration = () => {
+//     if(persons.length === 0) return "1"
+//     const id = Math.max(...persons.map(person => Number(person.id))) + 1
+//     return String(id)
+// }
 
 app.use(express.json(), express.static('dist'))
 app.use(
@@ -51,7 +53,9 @@ app.use(
 )
 
 app.get('/api/persons', (request,response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/info', (request, response) => {
@@ -68,13 +72,9 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const person = persons.find(person => person.id === request.params.id)
-
-    if(person) {
+    Person.findById(request.params.id).then(person => {
         response.json(person)
-    }else{
-        response.status(404).end()
-    }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -98,22 +98,24 @@ app.post('/api/persons', (request, response) => {
             error: 'number missing'
         })
     }
-    if(persons.find(person => person.name === body.name)){
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
-    const newPerson = {
-        name: body.name,
-        number: body.number,
-        id: idGeneration()
-    }
 
-    persons = persons.concat(newPerson)
-    response.json(newPerson)
+    // if(persons.find(person => person.name === body.name)){
+    //     return response.status(400).json({
+    //         error: 'name must be unique'
+    //     })
+    // }
+
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+
+    person.save().then(savedNote => {
+        response.json(savedNote)
+    })
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
