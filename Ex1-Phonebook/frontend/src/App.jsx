@@ -86,7 +86,8 @@ const App = () => {
       personService
         .deletePerson(id)
         .then(returnedData => {
-          setPersons(persons.filter(person => person.id !== returnedData.id))
+          debugger
+          setPersons(persons.filter(person => person.id !== id))
         })
     }
   }
